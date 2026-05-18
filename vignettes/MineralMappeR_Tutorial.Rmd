@@ -1,0 +1,144 @@
+---
+title: "MineralMappeR: Hydrothermal Alteration Mapping Tutorial"
+author: "Theano Skolariki"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{MineralMappeR_Tutorial}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5
+)
+```
+
+## Introduction
+
+`MineralMappeR` is an R package designed for regional-scale mineral exploration targeting using Landsat 9 multispectral imagery. It specifically targets hydrothermal alteration zones associated with porphyry copper systems. These systems represent the world's primary source of copper (Cu), frequently accompanied by economically significant amounts of gold (Au) and molybdenum (Mo).
+
+Formed by hot, mineral-rich fluids circulating through the Earth's crust, these systems alter the chemistry and mineralogy of the surrounding rocks. The resulting hydrothermal alteration zones exhibit distinct spectral signatures and serve as critical surface indicators for identifying buried mineralization.
+
+In `MineralMappeR`, these zones are characterized and detected via diagnostic caps of iron oxides and hydroxyl-bearing clay minerals.
+
+This vignette demonstrates the complete core processing pipeline using the built-in sample subset from the **Atacama Desert, Chile**.
+
+## Setup and Data Loading
+
+First, we load the package along with the `terra` library for spatial data handling.
+
+```{r setup}
+library(MineralMappeR)
+library(terra)
+```
+
+Instead of using absolute local paths, we access the package's internal sample data located in the `inst/extdata` directory using `system.file()`. This ensures reproducibility across any system.
+
+```{r data-loading}
+# Construct internal package paths and stack required Landsat 9 spectral bands
+band_paths <- system.file("extdata", paste0("atacam_sample_B", c(2,4,5,6,7), ".tif"), package = "MineralMappeR")
+image <- terra::rast(band_paths)
+names(image) <- c("B2", "B4", "B5", "B6", "B7")
+
+# Access the accompanying Quality Assessment (QA_PIXEL) layer
+qa_path <- system.file("extdata", "atacam_sample_QA.tif", package = "MineralMappeR")
+qa_layer <- terra::rast(qa_path)
+```
+
+## Processing Pipeline
+
+### 1. Radiometric Calibration
+
+Raw satellite scenes contain Digital Numbers (DN). We convert these to top-of-atmosphere (TOA) reflectance values (0 to 1) using official Landsat 9 Collection 2 scaling factors.
+
+```{r calibration}
+image_ref <- scale_landsat_data(image)
+```
+
+### 2. Atmospheric and Surface Noise Masking
+
+To prevent false positives, we apply an integrated mask. This step filters out clouds, shadows, and water bodies using NASA's QA bits (Bitmask 152), alongside a mean albedo threshold (\> 0.5) to exclude highly reflective salt flats (Salars), which represent a dominant geomorphological feature in the Atacama study region and otherwise cause severe spectral interference.
+
+```{r noise-masking}
+image_clean <- clean_image_noise(image_ref, qa_layer, albedo_threshold = 0.5)
+```
+
+### 3. Environmental Interference Filtering
+
+Vegetation strongly alters spectral signatures, particularly absorbing Red light (B4) due to chlorophyll contents. We apply the Normalized Difference Vegetation Index (NDVI) to isolate bare rock and soil. The index is calculated using Landsat 9's Near-Infrared (B5) and Red (B4) bands as follows:
+
+$$NDVI = \frac{B5 - B4}{B5 + B4}$$
+
+We apply a mask to exclude pixels with active vegetation (NDVI \> 0.3) and topographic shadows or water remnants (NDVI \< 0), ensuring that only exposed lithology is analyzed.
+
+```{r env-filtering}
+image_final <- mask_env_noise(image_clean, threshold = 0.3)
+```
+
+### 4. Mineral Indices Calculation
+
+We calculate diagnostic mineral ratio indices based on standard economic geology remote sensing literature, pioneered by Rowan et al. (1974, 1977) and popularized by Sabins (1999):
+
+-   **Iron Oxide Ratio (B4 / B2):** Introduced by Rowan et al. (1974), this index divides the Red band by the Blue band. Iron oxide minerals (such as hematite, goethite, and limonite) strongly absorb Blue wavelengths and highly reflect Red wavelengths. This spectral contrast allows for the identification of iron-leached caps (gossans) typical of porphyry systems.
+
+$$Iron\ Oxide\ Index = \frac{B4}{B2}$$
+
+-   **Clay Minerals Ratio (B6 / B7):** Introduced by Rowan et al. (1977), this index divides the SWIR1 band by the SWIR2 band. Hydroxyl-bearing minerals (including kaolinite, alunite, and sericite/illite) found within argillic and phyllic alteration zones display intense absorption in the SWIR2 region due to Al-OH molecular bonds, while remaining highly reflective in SWIR1.
+
+$$Clay\ Minerals\ Index = \frac{B6}{B7}$$
+
+```{r mineral-indices}
+results <- calc_mineral_indices(image_final)
+```
+
+### 5. Multi-Index Target Identification
+
+Exploration targets are defined via the logical intersection where both the Iron Oxide and Clay Mineral indices exceed an empirical anomaly threshold of 1.5 (representing a signature 50% stronger than the background).
+
+```{r target-id}
+targets <- find_mineral_targets(results, threshold = 1.5)
+```
+
+## Visualization
+
+The package includes professional plotting functions optimized for geospatial visualization using `ggplot2` and `tidyterra`.
+
+### Diagnostic Mineral Maps
+
+We can visualize the continuous intensity distribution of both calculated mineral indices across the bare-ground study site.
+
+```{r plot-indices}
+plot_mineral_indices(results)
+```
+
+### Final Exploration Targets
+
+The final binary target map highlights high-probability hydrothermal alteration zones in gold, serving as a direct reconnaissance guide for field sampling and further investigation.
+
+```{r plot-targets}
+plot_mineral_targets(targets)
+```
+
+## Limitations and Geological Context
+
+While `MineralMappeR` provides a robust and automated framework for screening exploration targets, users must consider several technical and environmental limitations:
+
+1.  **Vegetation and Moisture Interference:** Active green vegetation strongly absorbs Red light (B4) due to chlorophyll, corrupting the Iron Oxide ratio. Additionally, moisture (soil water or humidity) heavily absorbs Shortwave Infrared (SWIR) wavelengths, which suppresses the spectral features of diagnostic clays.
+2.  **Arid Environment Optimization:** The methodology is specifically tailored for hyper-arid to semi-arid regions (e.g., the Atacama Desert) where bare rock and soil exposure are maximized. In humid or heavily vegetated terrains, extensive masking will render large portions of the scene unusable.
+3.  **Scale and Resolution Constraints:** Landsat 9 has a spatial resolution of 30 meters. A single pixel averages a 900-square-meter ground footprint, resulting in mixed pixels. This scale is highly effective for regional reconnaissance but cannot replace detailed field-scale mapping or drone photography.
+4.  **Target Screening vs. Mineral Identification:** The Clay Minerals index flags general hydroxyl-bearing groups (such as kaolinite, illite, or alunite) but cannot differentiate between individual mineral species due to Landsat's broad SWIR channels. Advanced identification requires high-resolution narrow-band sensors like ASTER or hyperspectral imagery. Therefore, this toolkit serves as a preliminary reconnaissance guide to optimize subsequent field sampling.
+
+## Conclusion
+
+By combining rigorous multi-tier noise masking with standardized physical spectral ratios, `MineralMappeR` provides a streamlined, reproducible, and scientifically grounded framework for rapid regional-scale mineral exploration screening. It effectively isolates lithological anomalies from environmental noise, allowing exploration geologists to efficiently target hydrothermal alteration zones before conducting high-cost field campaigns.
+
+## References
+
+-   Di Tommaso, I., & Rubinstein, N. (2007). Hydrothermal alteration mapping using ASTER data in the Infiernillo porphyry deposit, Argentina. *Ore Geology Reviews*, 32(1-2), 275-290.
+-   Osinowo, O. O., Gomy, A., & Isseini, M. (2021). Mapping hydrothermal alteration mineral deposits from Landsat 8 satellite data in Pala, Mayo Kebbi Region, Southwestern Chad. *Natural Resources Research*, 30(2), 1245-1263.
+-   Pour, A. B., & Hashim, M. (2015). Hydrothermal alteration mapping from Landsat-8 data, Sar Cheshmeh copper mining district, south-eastern Islamic Republic of Iran. *Journal of Taibah University for Science*, 9(4), 523-532.
+-   Sabins, F. F. (1999). Remote sensing for mineral exploration. *Ore Geology Reviews*, 14(3-4), 157-183. \`\`\`

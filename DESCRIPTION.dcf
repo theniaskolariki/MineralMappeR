@@ -1,0 +1,23 @@
+Package: MineralMappeR
+Type: Package
+Title: Mapping Hydrothermal Alteration Zones in Porphyry Systems using Landsat 9
+Version: 0.1.0
+Author: Theano Skolariki <theano.skolariki@outlook.com>
+Maintainer: Theano Skolariki <theano.skolariki@outlook.com>
+Description: A specialized toolkit for the identification of diagnostic mineral
+    indices in porphyry-style hydrothermal alteration systems. Utilizing
+    Landsat 9 multispectral data, the package provides functions for
+    high-reflectance masking, vegetation filtering (NDVI), and the
+    calculation of diagnostic ratios for iron oxides and hydroxyl-bearing
+    minerals (argillic and phyllitic zones).
+License: MIT
+Encoding: UTF-8
+LazyData: true
+Imports:
+    terra,
+    ggplot2,
+    tidyterra,
+    ggspatial
+URL: https://github.com/theniaskolariki/MineralMappeR
+BugReports: https://github.com/theniaskolariki/MineralMappeR/issues
+RoxygenNote: 7.2.3
