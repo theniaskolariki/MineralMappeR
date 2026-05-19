@@ -1,6 +1,6 @@
 # MineralMappeR
 
-`MineralMappeR` is an R package designed for regional-scale mineral exploration targeting using Landsat 9 multispectral imagery. It automates the screening and detection of hydrothermal alteration zones associated with porphyry copper-gold-molybdenum systems by calculating diagnostic spectral indices while filtering out atmospheric, surface, and environmental noise.
+`MineralMappeR` is an R package designed for regional-scale mineral exploration targeting using Landsat 9 multispectral imagery. It automates the screening and detection of hydrothermal alteration zones associated with porphyry copper-gold systems by calculating diagnostic spectral indices while filtering out atmospheric, surface, and environmental noise.
 
 ## Features
 
@@ -10,8 +10,7 @@
 -   **Exploration Targeting:** Logically intersects anomalous pixel values to highlight high-probability alteration targets.
 -   **Geospatial Visualization:** Built-in professional plotting capabilities optimized with `ggplot2` and `tidyterra`.
 
-For a detailed, step-by-step scientific walkthrough and geological analysis, please refer to the package vignette: vignette("MineralMappeR_Tutorial", package = "MineralMappeR").
-
+For a detailed, step-by-step scientific walkthrough and geological analysis, please refer to the package tutorial in the vignettes/ directory or run it inside RStudio using the built-in RMarkdown file.
 ## Installation
 
 You can install the development version of `MineralMappeR` directly from GitHub using the `devtools` package:
