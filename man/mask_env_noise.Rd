@@ -7,9 +7,14 @@
 mask_env_noise(image, threshold = 0.3)
 }
 \arguments{
-\item{image}{A SpatRaster containing B4 (Red) and B5 (NIR) layers.}
+\item{image}{A SpatRaster of surface reflectance containing layers named
+"B4" (Red) and "B5" (NIR).}
 
-\item{threshold}{NDVI limit for masking vegetation (default 0.3).}
+\item{threshold}{NDVI limit for masking vegetation (default 0.3). Pixels
+with NDVI above this value, or below 0 (water, deep shadow), are removed.}
+}
+\value{
+A SpatRaster with vegetated and water/shadow pixels set to NA.
 }
 \description{
 Environmental Interference Masking (Vegetation and Water)

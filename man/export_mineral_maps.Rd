@@ -9,7 +9,10 @@ export_mineral_maps(mineral_raster, output_dir = "Results")
 \arguments{
 \item{mineral_raster}{SpatRaster to export.}
 
-\item{output_dir}{Directory path for the output files.}
+\item{output_dir}{Directory path for the output files (created if missing).}
+}
+\value{
+Invisibly returns NULL; called for its side effect of writing files.
 }
 \description{
 Batch Export Spectral Products to GeoTIFF

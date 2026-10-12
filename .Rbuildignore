@@ -1,2 +1,8 @@
 ^MineralMappeR\.Rproj$
 ^\.Rproj\.user$
+^Data_raw$
+^Results$
+^Clay_Minerals_Map\.tif$
+^Iron_Oxide_Map\.tif$
+^CorrelationTable_.*\.csv$
+^\.Rhistory$

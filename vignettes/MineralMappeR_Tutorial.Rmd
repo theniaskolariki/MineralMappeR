@@ -53,7 +53,7 @@ qa_layer <- terra::rast(qa_path)
 
 ### 1. Radiometric Calibration
 
-Raw satellite scenes contain Digital Numbers (DN). We convert these to top-of-atmosphere (TOA) reflectance values (0 to 1) using official Landsat 9 Collection 2 scaling factors.
+Raw satellite scenes contain Digital Numbers (DN). We convert these to surface reflectance values (0 to 1) using the official Landsat 9 Collection 2 Level-2 scale factor (0.0000275) and offset (-0.2). These coefficients apply to Level-2 surface reflectance products only; Level-1 top-of-atmosphere data require different rescaling coefficients.
 
 ```{r calibration}
 image_ref <- scale_landsat_data(image)
@@ -73,7 +73,7 @@ Vegetation strongly alters spectral signatures, particularly absorbing Red light
 
 $$NDVI = \frac{B5 - B4}{B5 + B4}$$
 
-We apply a mask to exclude pixels with active vegetation (NDVI \> 0.3) and topographic shadows or water remnants (NDVI \< 0), ensuring that only exposed lithology is analyzed.
+We apply a mask to exclude pixels with active vegetation (NDVI \> 0.3) and water, deep shadow or otherwise invalid pixels (NDVI \< 0), so that the analysis is restricted largely to exposed rock and soil.
 
 ```{r env-filtering}
 image_final <- mask_env_noise(image_clean, threshold = 0.3)
@@ -83,7 +83,7 @@ image_final <- mask_env_noise(image_clean, threshold = 0.3)
 
 We calculate diagnostic mineral ratio indices based on standard economic geology remote sensing literature, pioneered by Rowan et al. (1974, 1977) and popularized by Sabins (1999):
 
--   **Iron Oxide Ratio (B4 / B2):** Introduced by Rowan et al. (1974), this index divides the Red band by the Blue band. Iron oxide minerals (such as hematite, goethite, and limonite) strongly absorb Blue wavelengths and highly reflect Red wavelengths. This spectral contrast allows for the identification of iron-leached caps (gossans) typical of porphyry systems.
+-   **Iron Oxide Ratio (B4 / B2):** Introduced by Rowan et al. (1974), this index divides the Red band by the Blue band. Iron oxide minerals (such as hematite, goethite, and limonite) strongly absorb Blue wavelengths and highly reflect Red wavelengths. This spectral contrast allows for the identification of iron-oxide-rich caps (gossans) typical of porphyry systems.
 
 $$Iron\ Oxide\ Index = \frac{B4}{B2}$$
 
@@ -97,7 +97,7 @@ results <- calc_mineral_indices(image_final)
 
 ### 5. Multi-Index Target Identification
 
-Exploration targets are defined via the logical intersection where both the Iron Oxide and Clay Mineral indices exceed an empirical anomaly threshold of 1.5 (representing a signature 50% stronger than the background).
+Exploration targets are defined via the logical intersection where both the Iron Oxide and Clay Mineral indices exceed an empirical anomaly threshold of 1.5. This is a practical starting value rather than a universal standard; ratio values depend on the scene, atmosphere and lithology, so the threshold should be tuned for each study area.
 
 ```{r target-id}
 targets <- find_mineral_targets(results, threshold = 1.5)
@@ -117,7 +117,7 @@ plot_mineral_indices(results)
 
 ### Final Exploration Targets
 
-The final binary target map highlights high-probability hydrothermal alteration zones in gold, serving as a direct reconnaissance guide for field sampling and further investigation.
+The final binary target map highlights high-probability hydrothermal alteration zones, serving as a direct reconnaissance guide for field sampling and further investigation.
 
 ```{r plot-targets}
 plot_mineral_targets(targets)
@@ -131,6 +131,7 @@ While `MineralMappeR` provides a robust and automated framework for screening ex
 2.  **Arid Environment Optimization:** The methodology is specifically tailored for hyper-arid to semi-arid regions (e.g., the Atacama Desert) where bare rock and soil exposure are maximized. In humid or heavily vegetated terrains, extensive masking will render large portions of the scene unusable.
 3.  **Scale and Resolution Constraints:** Landsat 9 has a spatial resolution of 30 meters. A single pixel averages a 900-square-meter ground footprint, resulting in mixed pixels. This scale is highly effective for regional reconnaissance but cannot replace detailed field-scale mapping or drone photography.
 4.  **Target Screening vs. Mineral Identification:** The Clay Minerals index flags general hydroxyl-bearing groups (such as kaolinite, illite, or alunite) but cannot differentiate between individual mineral species due to Landsat's broad SWIR channels. Advanced identification requires high-resolution narrow-band sensors like ASTER or hyperspectral imagery. Therefore, this toolkit serves as a preliminary reconnaissance guide to optimize subsequent field sampling.
+5.  **Non-unique Spectral Responses:** Band ratios are not exclusive to hydrothermal alteration. Iron-oxide-rich red beds, desert varnish or ferruginous sediments can raise the Iron Oxide ratio, and other clay-, sulfate- or carbonate-bearing lithologies can raise the Clay Minerals ratio. Flagged targets should therefore be checked against geological maps and field data.
 
 ## Conclusion
 
@@ -141,4 +142,6 @@ By combining rigorous multi-tier noise masking with standardized physical spectr
 -   Di Tommaso, I., & Rubinstein, N. (2007). Hydrothermal alteration mapping using ASTER data in the Infiernillo porphyry deposit, Argentina. *Ore Geology Reviews*, 32(1-2), 275-290.
 -   Osinowo, O. O., Gomy, A., & Isseini, M. (2021). Mapping hydrothermal alteration mineral deposits from Landsat 8 satellite data in Pala, Mayo Kebbi Region, Southwestern Chad. *Natural Resources Research*, 30(2), 1245-1263.
 -   Pour, A. B., & Hashim, M. (2015). Hydrothermal alteration mapping from Landsat-8 data, Sar Cheshmeh copper mining district, south-eastern Islamic Republic of Iran. *Journal of Taibah University for Science*, 9(4), 523-532.
--   Sabins, F. F. (1999). Remote sensing for mineral exploration. *Ore Geology Reviews*, 14(3-4), 157-183. \`\`\`
+-   Rowan, L. C., Wetlaufer, P. H., Goetz, A. F. H., Billingsley, F. C., & Stewart, J. H. (1974). Discrimination of rock types and detection of hydrothermally altered areas in south-central Nevada by the use of computer-enhanced ERTS images. *U.S. Geological Survey Professional Paper* 883.
+-   Rowan, L. C., Goetz, A. F. H., & Ashley, R. P. (1977). Discrimination of hydrothermally altered and unaltered rocks in visible and near infrared multispectral images. *Geophysics*, 42(3), 522-535.
+-   Sabins, F. F. (1999). Remote sensing for mineral exploration. *Ore Geology Reviews*, 14(3-4), 157-183.

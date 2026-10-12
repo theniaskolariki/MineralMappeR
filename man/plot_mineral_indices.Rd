@@ -7,7 +7,11 @@
 plot_mineral_indices(mineral_raster)
 }
 \arguments{
-\item{mineral_raster}{A SpatRaster from calc_mineral_indices.}
+\item{mineral_raster}{A SpatRaster from calc_mineral_indices. Values above
+2.5 are displayed in the top colour of the scale.}
+}
+\value{
+A ggplot object.
 }
 \description{
 Plot Mineral Diagnostic Maps

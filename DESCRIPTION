@@ -10,14 +10,18 @@ Description: A specialized toolkit for the identification of diagnostic mineral
     high-reflectance masking, vegetation filtering (NDVI), and the
     calculation of diagnostic ratios for iron oxides and hydroxyl-bearing
     minerals (argillic and phyllitic zones).
-License: MIT
+License: MIT + file LICENSE
 Encoding: UTF-8
-LazyData: true
 Imports:
     terra,
     ggplot2,
     tidyterra,
-    ggspatial
+    ggspatial,
+    scales
+Suggests:
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
 URL: https://github.com/theniaskolariki/MineralMappeR
 BugReports: https://github.com/theniaskolariki/MineralMappeR/issues
 RoxygenNote: 7.3.3

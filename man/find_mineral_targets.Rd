@@ -9,7 +9,12 @@ find_mineral_targets(mineral_raster, threshold = 1.5)
 \arguments{
 \item{mineral_raster}{SpatRaster with calculated mineral indices.}
 
-\item{threshold}{Anomaly intensity cut-off (geological standard: 1.5).}
+\item{threshold}{Anomaly cut-off applied to both indices (default 1.5). This
+is an empirical starting value, not a universal standard, and should be
+tuned to the scene (sensor, atmosphere, lithology).}
+}
+\value{
+A SpatRaster named `Exploration_Targets` (1 = target, 0 = background).
 }
 \description{
 Identify High-Probability Mineral Exploration Targets

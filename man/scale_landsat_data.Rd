@@ -2,16 +2,22 @@
 % Please edit documentation in R/indices.R
 \name{scale_landsat_data}
 \alias{scale_landsat_data}
-\title{Calibrate Landsat 9 Digital Numbers (DN) to Reflectance}
+\title{Calibrate Landsat 9 Digital Numbers (DN) to Surface Reflectance}
 \usage{
 scale_landsat_data(image)
 }
 \arguments{
-\item{image}{A SpatRaster object (Landsat 9 Collection 2 Level-1).}
+\item{image}{A SpatRaster of Landsat 9 Collection 2 Level-2 surface
+reflectance bands (digital numbers).}
 }
 \value{
-A SpatRaster with reflectance values scaled between 0 and 1.
+A SpatRaster with surface reflectance values clamped to [0, 1].
+  Small negative values, which occur in dark pixels of surface reflectance
+  products, are set to 0.
 }
 \description{
-Calibrate Landsat 9 Digital Numbers (DN) to Reflectance
+Applies the official USGS Collection 2 Level-2 scale factor (0.0000275) and
+additive offset (-0.2). These coefficients are valid for Level-2 surface
+reflectance bands only (SR_B2 ... SR_B7); Level-1 top-of-atmosphere DN use
+different rescaling coefficients (see the scene MTL file).
 }

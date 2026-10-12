@@ -7,11 +7,17 @@
 clean_image_noise(image, qa_layer, albedo_threshold = 0.5)
 }
 \arguments{
-\item{image}{Multispectral SpatRaster (Reflectance).}
+\item{image}{Multispectral SpatRaster (surface reflectance).}
 
-\item{qa_layer}{Landsat 9 QA_PIXEL layer for bitmasking.}
+\item{qa_layer}{Landsat 9 QA_PIXEL layer for bitmasking (cloud, cloud shadow
+and water bits).}
 
-\item{albedo_threshold}{Threshold for bright surface removal (default 0.5).}
+\item{albedo_threshold}{Threshold on the mean reflectance across all bands
+of `image`, above which pixels are removed as bright surfaces such as salt
+flats (default 0.5).}
+}
+\value{
+A SpatRaster with noisy pixels set to NA.
 }
 \description{
 Integrated Atmospheric and Surface Noise Masking

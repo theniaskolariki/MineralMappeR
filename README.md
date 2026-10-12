@@ -4,8 +4,8 @@
 
 ## Features
 
--   **Radiometric Calibration:** Converts raw Landsat 9 DN values to Top-of-Atmosphere (TOA) Reflectance automatically.
--   **Multi-Tier Noise Masking:** Integrated QA bitmasking (clouds/shadows/water), Albedo filtering (to exclude highly reflective salt flats/Salars), and NDVI thresholding (to eliminate vegetation and topographic shadows).
+-   **Radiometric Calibration:** Converts Landsat 9 Collection 2 Level-2 DN values to surface reflectance automatically.
+-   **Multi-Tier Noise Masking:** Integrated QA bitmasking (clouds/shadows/water), Albedo filtering (to exclude highly reflective salt flats/Salars), and NDVI thresholding (to eliminate vegetation, water and deep-shadow pixels).
 -   **Diagnostic Mineral Ratios:** Computes Iron Oxide (B4/B2) and Clay Minerals (B6/B7) indices based on classic Rowan and Sabins remote sensing methodologies.
 -   **Exploration Targeting:** Logically intersects anomalous pixel values to highlight high-probability alteration targets.
 -   **Geospatial Visualization:** Built-in professional plotting capabilities optimized with `ggplot2` and `tidyterra`.
@@ -56,4 +56,4 @@ plot_mineral_targets(targets)
 
 ## License
 
-This project is licensed under the MIT License - see the DESCRIPTION file for details.
+This project is licensed under the MIT License - see the LICENSE file for details.

@@ -7,10 +7,13 @@
 calc_mineral_indices(image)
 }
 \arguments{
-\item{image}{A SpatRaster with calibrated B2, B4, B6, B7 bands.}
+\item{image}{A SpatRaster of surface reflectance with layers named "B2",
+"B4", "B6" and "B7".}
 }
 \value{
-A SpatRaster containing Iron Oxide and Clay Mineral indices.
+A SpatRaster with the layers `Iron_Oxide` (B4/B2) and
+  `Clay_Minerals` (B6/B7). Non-finite values (division by zero, which occurs
+  where reflectance was clamped to 0) are set to NA.
 }
 \description{
 Calculate Diagnostic Spectral Mineral Indices

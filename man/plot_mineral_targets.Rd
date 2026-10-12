@@ -7,7 +7,11 @@
 plot_mineral_targets(target_raster)
 }
 \arguments{
-\item{target_raster}{A SpatRaster containing identified targets.}
+\item{target_raster}{A SpatRaster containing identified targets
+(output of find_mineral_targets).}
+}
+\value{
+A ggplot object.
 }
 \description{
 Generate Professional Exploration Target Plot
